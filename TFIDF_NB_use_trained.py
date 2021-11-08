@@ -3,7 +3,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import SparkSession
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import Tokenizer,CountVectorizer,HashingTF,IDF,StringIndexer,IndexToString
-from pyspark.ml.classification import NaiveBayes
+from pyspark.ml.classification import NaiveBayesModel
 
 sc =SparkContext()
 spark=SparkSession(sc)
@@ -22,8 +22,8 @@ dataset = pipeline_model.transform(news_heading)
 (trainingData, testData) = dataset.randomSplit([0.7, 0.3], seed = 42)
 
 
-nb=NaiveBayes(featuresCol='Heading_tfidf', labelCol='Categories_idx')
-nb_model=nb.fit(trainingData)
+
+nb_model=NaiveBayesModel.NaiveBayesModel.load("TFIDF_NB_model")
 prediction=nb_model.transform(testData)
 
 inverter =IndexToString(inputCol="prediction", outputCol="prediction_inverted", labels=pipeline_model.stages[-1].labels)
@@ -31,4 +31,4 @@ inverter =IndexToString(inputCol="prediction", outputCol="prediction_inverted", 
 inverted_prediction=inverter.transform(prediction)
 result=inverted_prediction.select(["Heading","Categories","probability","prediction","prediction_inverted"])
 # result.toPandas().to_csv('hdfs://10.1.0.4:9000/result.csv',index=False)
-result.toPandas().to_csv('result.csv',index=False)
+result.toPandas().to_csv('trained_model_result.csv',index=False)
