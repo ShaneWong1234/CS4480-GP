@@ -10,6 +10,7 @@ from pyspark.sql.types import StructType
 
 path = 'hot_files'
 sc =SparkContext()
+sc.setLogLevel("ERROR")
 spark=SparkSession(sc)
 
 csv_sdf=spark.readStream.schema("Categories STRING, Heading STRING").csv(path)
@@ -26,7 +27,7 @@ result=inverted_prediction.select(["Heading","Categories","probability","predict
 # query=result.writeStream.format("console").start()
 def foreach_batch_function(df, epoch_id):
     # Transform and write batchDF
-    df.toPandas().to_csv("result.csv")
+    df.toPandas().to_csv("streaming_result.csv",mode="a")
     pass
 query=result.writeStream.foreachBatch(foreach_batch_function).start()
 query.awaitTermination()
